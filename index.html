@@ -184,6 +184,23 @@
     const BUCKET = 'fotos-evento';
     const LIMITE = 5;
 
+    // Compresión antes de subir (para que entren muchas más fotos en Supabase)
+    const LADO_MAXIMO = 2048; // px del lado más largo (Instagram usa 1080, queda margen para recortes)
+    const CALIDAD     = 0.88; // calidad JPEG (0 a 1)
+
+    // Marca de agua: PNG con fondo transparente, subido al repo junto al index.html
+    const LOGO_MARCA     = 'logo-15va.png';
+    const MARCA_TAMANO   = 0.24; // ancho del logo, en proporción al lado corto de la foto
+    const MARCA_MARGEN   = 0.04; // distancia al borde, en proporción al lado corto
+    const MARCA_OPACIDAD = 0.9;
+
+    const promesaLogo = new Promise(resolver => {
+      const img = new Image();
+      img.onload  = () => resolver(img);
+      img.onerror = () => { console.warn('No se encontró ' + LOGO_MARCA + ': las fotos se suben sin marca de agua'); resolver(null); };
+      img.src = LOGO_MARCA;
+    });
+
     const seccionCamara   = document.getElementById('pantallaCamara');
     const inputCamara     = document.getElementById('camaraInput');
     const inputGaleria    = document.getElementById('galeriaInput');
@@ -228,6 +245,56 @@
       pintarRollos();
     }
 
+    // Achica la foto a 2048 px, le estampa el logo y la pasa a JPEG. Si algo falla, devuelve la original.
+    async function cargarImagen(archivo) {
+      try {
+        return await createImageBitmap(archivo, { imageOrientation: 'from-image' });
+      } catch (e) {
+        return await new Promise((resolver, rechazar) => {
+          const img = new Image();
+          img.onload = () => resolver(img);
+          img.onerror = rechazar;
+          img.src = URL.createObjectURL(archivo);
+        });
+      }
+    }
+
+    async function comprimirFoto(archivo) {
+      try {
+        const imagen = await cargarImagen(archivo);
+        const escala = Math.min(1, LADO_MAXIMO / Math.max(imagen.width, imagen.height));
+        const lienzo = document.createElement('canvas');
+        lienzo.width  = Math.round(imagen.width * escala);
+        lienzo.height = Math.round(imagen.height * escala);
+        const ctx = lienzo.getContext('2d');
+        ctx.drawImage(imagen, 0, 0, lienzo.width, lienzo.height);
+        if (imagen.close) imagen.close();
+
+        // Estampa el logo abajo a la derecha
+        const logo = await promesaLogo;
+        if (logo) {
+          const ladoCorto = Math.min(lienzo.width, lienzo.height);
+          const anchoLogo = ladoCorto * MARCA_TAMANO;
+          const altoLogo  = anchoLogo * logo.naturalHeight / logo.naturalWidth;
+          const margen    = ladoCorto * MARCA_MARGEN;
+          ctx.save();
+          ctx.globalAlpha = MARCA_OPACIDAD;
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+          ctx.shadowBlur  = ladoCorto * 0.012;
+          ctx.drawImage(logo, lienzo.width - anchoLogo - margen, lienzo.height - altoLogo - margen, anchoLogo, altoLogo);
+          ctx.restore();
+        }
+
+        const blob = await new Promise(resolver => lienzo.toBlob(resolver, 'image/jpeg', CALIDAD));
+        if (!blob) return archivo;
+        if (!logo && blob.size >= archivo.size) return archivo; // sin marca, si no achica, va la original
+        return new File([blob], 'foto.jpg', { type: 'image/jpeg' });
+      } catch (error) {
+        console.warn('No se pudo comprimir, se sube la original', error);
+        return archivo;
+      }
+    }
+
     // Sube el archivo binario a Supabase Storage, en el bucket 'fotos-evento'
     async function subirASupabase(archivo) {
       const partes = archivo.name.split('.');
@@ -263,9 +330,10 @@
       estado.textContent = 'Subiendo tu foto…';
 
       try {
-        await subirASupabase(archivo);
+        const fotoLiviana = await comprimirFoto(archivo);
+        await subirASupabase(fotoLiviana);
 
-        miniaturas.push(URL.createObjectURL(archivo));
+        miniaturas.push(URL.createObjectURL(fotoLiviana)); // la miniatura ya muestra el logo
         fotosTomadas++;
         escribir('gea_fotos_contadas', fotosTomadas);
         actualizarContador();
