@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Camarita GEA - 15va Convención</title>
+
+  <!-- Tipografías de la 15va: Barlow Condensed (títulos) + Lato (texto) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;600;700;800&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS desde CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gea: {
+              azul: '#3852b3',
+              naranja: '#f08d38',
+              naranjaOsc: '#dc7a26',
+              fondo: '#f3f3f3'
+            }
+          },
+          fontFamily: {
+            barlow: ['"Barlow Condensed"', '"Arial Narrow"', 'sans-serif'],
+            lato: ['Lato', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Detalles que Tailwind no cubre directo -->
+  <style>
+    :focus-visible { outline: 3px solid #3852b3; outline-offset: 3px; }
+
+    .pantalla { display: none; }
+    .pantalla.activa { display: flex; animation: entrar .35s ease-out; }
+    @keyframes entrar { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    /* Disparador con doble anillo tipo lente */
+    .disparador { box-shadow: 0 0 0 8px #f3f3f3, 0 0 0 10px #3852b3; }
+
+    /* Inputs de archivo ocultos pero accesibles con teclado */
+    .input-oculto { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+    .input-oculto:focus-visible + label { outline: 3px solid #3852b3; outline-offset: 6px; }
+
+    /* Cuadros del rollo (se generan desde el script) */
+    .cuadro { aspect-ratio: 3 / 4; border-radius: 6px; border: 1.5px dashed rgba(56, 82, 179, .35); background: #fff; }
+    .cuadro.lleno { border: 0; background: #f08d38 center / cover no-repeat; animation: llenar .3s ease-out; }
+    @keyframes llenar { from { transform: scale(.85); opacity: .4; } to { transform: none; opacity: 1; } }
+
+    /* Mientras sube una foto se bloquean los botones */
+    .subiendo .disparador, .subiendo .btn-galeria { opacity: .5; pointer-events: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pantalla.activa, .cuadro.lleno { animation: none; }
+    }
+  </style>
+</head>
+<body class="bg-gea-fondo text-gea-azul font-lato antialiased min-h-screen min-h-[100dvh] flex flex-col selection:bg-gea-naranja selection:text-white">
+
+  <!-- CABECERA -->
+  <header class="flex flex-col items-center px-6 pt-8 pb-2">
+    <!-- LOGO: reemplazá el src por el logo de la 15va si tenés otra versión -->
+    <img src="https://cdn.eventtia.com/event_files/243393/original/logo-gea-fiesta.png?1790269039" alt="15va Convención GEA" class="max-h-[76px] w-auto">
+    <div class="w-12 h-1 rounded bg-gea-naranja mt-4"></div>
+  </header>
+
+  <main class="flex-1 flex flex-col items-center justify-center w-full max-w-[420px] mx-auto px-6 py-5">
+
+    <!-- PANTALLA 1: HOME -->
+    <section id="pantallaHome" class="pantalla activa flex-col items-center text-center w-full">
+      <h1 class="font-barlow font-extrabold uppercase text-[38px] leading-[0.95] mb-3.5">
+        Tu POV de la<br><span class="font-light">15va Convención GEA</span>
+      </h1>
+      <p class="text-[15px] leading-relaxed max-w-[34ch] mb-6">
+        Nuestra camarita GEA para que registres los momentos más lindos del evento. Tenés 5 fotos, así que pensalas bien.
+      </p>
+
+      <ol class="w-full text-left mb-7 border-y border-gea-azul/20 divide-y divide-gea-azul/20">
+        <li class="grid grid-cols-[40px_1fr] items-center gap-x-3 py-3.5">
+          <span class="font-barlow font-bold text-[32px] leading-none text-gea-naranja">1</span>
+          <span class="font-barlow font-bold uppercase text-[17px] leading-tight">Tocá el botón <span class="font-light">para empezar</span></span>
+        </li>
+        <li class="grid grid-cols-[40px_1fr] items-center gap-x-3 py-3.5">
+          <span class="font-barlow font-bold text-[32px] leading-none text-gea-naranja">2</span>
+          <span class="font-barlow font-bold uppercase text-[17px] leading-tight">Sacá las fotos <span class="font-light">del evento</span></span>
+        </li>
+        <li class="grid grid-cols-[40px_1fr] items-center gap-x-3 py-3.5">
+          <span class="font-barlow font-bold text-[32px] leading-none text-gea-naranja">3</span>
+          <span class="font-barlow font-bold uppercase text-[17px] leading-tight">Poné guardar <span class="font-light">para enviarlas de forma segura</span></span>
+        </li>
+        <li class="grid grid-cols-[40px_1fr] items-center gap-x-3 py-3.5">
+          <span class="font-barlow font-bold text-[32px] leading-none text-gea-naranja">4</span>
+          <span class="font-barlow font-bold uppercase text-[17px] leading-tight">¡Rollo completo! <span class="font-light">Tus fotos se revelan de manera privada</span></span>
+        </li>
+      </ol>
+
+      <button type="button" onclick="irAPantalla('pantallaCamara')"
+        class="w-full rounded-[18px] bg-gea-naranja hover:bg-gea-naranjaOsc active:scale-[.97] transition text-white font-barlow font-bold uppercase text-[21px] tracking-wide py-4 px-5">
+        Quiero sacar mis fotos
+      </button>
+    </section>
+
+    <!-- PANTALLA 2: CÁMARA -->
+    <section id="pantallaCamara" class="pantalla flex-col items-center text-center w-full">
+      <div class="w-full flex items-center justify-between bg-gea-azul text-white rounded-[10px] px-[18px] py-3 mb-10">
+        <span class="font-barlow font-light uppercase text-[19px]">Fotos restantes</span>
+        <span id="contadorDisplay" class="font-barlow font-extrabold text-[38px] leading-none">5 / 5</span>
+      </div>
+
+      <!-- Cámara: abre directo la cámara del celular -->
+      <input type="file" accept="image/*" capture="environment" id="camaraInput" class="input-oculto">
+      <label for="camaraInput"
+        class="disparador w-[172px] h-[172px] rounded-full bg-gea-naranja hover:bg-gea-naranjaOsc active:scale-95 transition text-white flex flex-col items-center justify-center gap-2 cursor-pointer">
+        <svg class="w-[46px] h-[46px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg>
+        <span class="font-barlow font-bold uppercase text-[15px] tracking-wide leading-tight px-6">Paso 2: Sacar foto</span>
+      </label>
+
+      <p id="estadoFoto" aria-live="polite" class="font-barlow font-semibold uppercase text-[18px] mt-9 min-h-[22px]"></p>
+
+      <!-- Galería: sin "capture", así el celular deja elegir una foto guardada -->
+      <input type="file" accept="image/*" id="galeriaInput" class="input-oculto">
+      <label for="galeriaInput"
+        class="btn-galeria inline-flex items-center gap-2 mt-4 mb-8 px-5 py-2.5 rounded-[18px] border-[1.5px] border-gea-azul font-barlow font-bold uppercase text-[17px] cursor-pointer hover:bg-gea-azul hover:text-white transition">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+        Subir desde la galería
+      </label>
+
+      <div class="rollo grid grid-cols-5 gap-2 w-full" aria-hidden="true"></div>
+    </section>
+
+    <!-- PANTALLA 3: GUARDAR (aparece al completar la 5ta foto) -->
+    <section id="pantallaGuardar" class="pantalla flex-col items-center text-center w-full">
+      <h2 class="font-barlow font-extrabold uppercase text-[30px] leading-none mb-2.5">Paso 3: Poné guardar</h2>
+      <p class="text-[15px] leading-relaxed max-w-[34ch] mb-6">¡Completaste tu rollo! Tocá guardar para cerrarlo y que tus fotos lleguen al equipo de la convención.</p>
+      <div class="rollo grid grid-cols-5 gap-2 w-full mb-6" aria-hidden="true"></div>
+      <button type="button" id="btnGuardar"
+        class="w-full rounded-[18px] bg-gea-naranja hover:bg-gea-naranjaOsc active:scale-[.97] transition text-white font-barlow font-bold uppercase text-[21px] tracking-wide py-4 px-5">
+        Guardar mis fotos
+      </button>
+    </section>
+
+    <!-- PANTALLA 4: ROLLO COMPLETO -->
+    <section id="pantallaFinal" class="pantalla flex-col items-center text-center w-full bg-gea-azul text-white rounded-[14px] px-[22px] pt-[30px] pb-[22px]">
+      <div class="w-16 h-16 rounded-full bg-gea-naranja flex items-center justify-center mb-[18px]">
+        <svg class="w-[30px] h-[30px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18M17 3v18M3 7.5h4M3 12h18M3 16.5h4M17 7.5h4M17 16.5h4"/></svg>
+      </div>
+      <h2 class="font-barlow font-extrabold uppercase text-[30px] leading-none mb-2.5">Paso 4: ¡Rollo completo!</h2>
+      <p class="inline-block bg-gea-naranja rounded-[18px] px-3.5 py-1.5 font-barlow font-bold uppercase text-[17px] mb-4">Alcanzaste el límite de 5 fotos</p>
+      <p class="text-[15px] leading-relaxed max-w-[34ch] mb-[22px]">Tus fotos se están revelando de forma privada para el equipo interno. ¡Estate atento a nuestras redes!</p>
+
+      <div class="w-full border-t border-white/35 pt-[18px]">
+        <p class="font-barlow font-light uppercase text-[17px] mb-3">Seguinos en tiempo real</p>
+        <div class="flex justify-center gap-3.5">
+          <a href="https://www.instagram.com/grupogeaargentina/" target="_blank" rel="noopener" aria-label="Instagram de Grupo GEA"
+            class="w-[46px] h-[46px] rounded-full border border-white/50 flex items-center justify-center hover:bg-gea-naranja hover:border-gea-naranja transition">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="20" x="2" y="2" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><path d="M17.5 6.5h.01"/></svg>
+          </a>
+          <a href="https://grupogea.la/" target="_blank" rel="noopener" aria-label="Sitio web de Grupo GEA"
+            class="w-[46px] h-[46px] rounded-full border border-white/50 flex items-center justify-center hover:bg-gea-naranja hover:border-gea-naranja transition">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- PIE -->
+  <footer class="text-center px-6 pt-[18px] pb-[22px] text-xs opacity-55">© 2026 Grupo GEA. Acceso privado para invitados.</footer>
+
+  <script>
+    // =====================================================================
+    // ⚠️ TUS DATOS DE SUPABASE (completá lo que está entre comillas)
+    const SUPABASE_URL = 'https://supabase.co';
+    const SUPABASE_KEY = 'ACÁ_PEGO_MI_ANON_KEY';
+    // =====================================================================
+
+    const BUCKET = 'fotos-evento';
+    const LIMITE = 5;
+
+    const seccionCamara   = document.getElementById('pantallaCamara');
+    const inputCamara     = document.getElementById('camaraInput');
+    const inputGaleria    = document.getElementById('galeriaInput');
+    const displayContador = document.getElementById('contadorDisplay');
+    const estado          = document.getElementById('estadoFoto');
+    const btnGuardar      = document.getElementById('btnGuardar');
+
+    function leer(clave) { try { return localStorage.getItem(clave); } catch (e) { return null; } }
+    function escribir(clave, valor) { try { localStorage.setItem(clave, valor); } catch (e) {} }
+
+    let fotosTomadas  = parseInt(leer('gea_fotos_contadas')) || 0;
+    let rolloGuardado = leer('gea_rollo_guardado') === '1';
+    let subiendo      = false;
+    const miniaturas  = []; // miniaturas de las fotos de esta sesión
+
+    function irAPantalla(idPantalla) {
+      document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+      document.getElementById(idPantalla).classList.add('activa');
+    }
+
+    // Dibuja los 5 cuadros del rollo
+    function pintarRollos() {
+      const desfase = fotosTomadas - miniaturas.length;
+      document.querySelectorAll('.rollo').forEach(rollo => {
+        rollo.innerHTML = '';
+        for (let i = 0; i < LIMITE; i++) {
+          const cuadro = document.createElement('div');
+          cuadro.className = 'cuadro';
+          if (i < fotosTomadas) {
+            cuadro.classList.add('lleno');
+            const url = miniaturas[i - desfase];
+            if (url) cuadro.style.backgroundImage = `url(${url})`;
+          }
+          rollo.appendChild(cuadro);
+        }
+      });
+    }
+
+    function actualizarContador() {
+      const restantes = Math.max(LIMITE - fotosTomadas, 0);
+      displayContador.textContent = `${restantes} / ${LIMITE}`;
+      pintarRollos();
+    }
+
+    // Sube el archivo binario a Supabase Storage, en el bucket 'fotos-evento'
+    async function subirASupabase(archivo) {
+      const partes = archivo.name.split('.');
+      const extension = ((partes.length > 1 ? partes.pop() : (archivo.type.split('/')[1] || 'jpg'))
+        .toLowerCase().replace(/[^a-z0-9]/g, '')) || 'jpg';
+
+      // Nombre único: Date.now() + sufijo aleatorio por si dos invitados suben en el mismo milisegundo
+      const nombreArchivo = `foto-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
+
+      const respuesta = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${nombreArchivo}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'apikey': SUPABASE_KEY,
+          'Content-Type': archivo.type || 'application/octet-stream'
+        },
+        body: archivo // el binario tal cual sale de e.target.files[0]
+      });
+
+      if (!respuesta.ok) {
+        const detalle = await respuesta.text().catch(() => '');
+        throw new Error(`Supabase respondió ${respuesta.status}: ${detalle}`);
+      }
+    }
+
+    async function agregarFoto(e) {
+      const archivo = e.target.files[0];
+      e.target.value = ''; // permite volver a elegir la misma foto si falla
+      if (!archivo || subiendo || fotosTomadas >= LIMITE) return;
+
+      subiendo = true;
+      seccionCamara.classList.add('subiendo');
+      estado.textContent = 'Subiendo tu foto…';
+
+      try {
+        await subirASupabase(archivo);
+
+        miniaturas.push(URL.createObjectURL(archivo));
+        fotosTomadas++;
+        escribir('gea_fotos_contadas', fotosTomadas);
+        actualizarContador();
+
+        if (fotosTomadas >= LIMITE) {
+          irAPantalla('pantallaGuardar'); // Paso 3 recién con la 5ta foto
+        } else {
+          const quedan = LIMITE - fotosTomadas;
+          estado.textContent = `¡Foto ${fotosTomadas} lista! Te ${quedan === 1 ? 'queda 1' : 'quedan ' + quedan}`;
+        }
+      } catch (error) {
+        console.error(error);
+        estado.textContent = 'No pudimos subir la foto. Probá de nuevo.';
+      } finally {
+        subiendo = false;
+        seccionCamara.classList.remove('subiendo');
+      }
+    }
+
+    inputCamara.addEventListener('change', agregarFoto);
+    inputGaleria.addEventListener('change', agregarFoto);
+
+    // Paso 3 → Paso 4 (las fotos ya se subieron una por una)
+    btnGuardar.addEventListener('click', () => {
+      rolloGuardado = true;
+      escribir('gea_rollo_guardado', '1');
+      irAPantalla('pantallaFinal');
+    });
+
+    // Al iniciar, retomar donde quedó cada invitado
+    actualizarContador();
+    if (rolloGuardado) {
+      irAPantalla('pantallaFinal');
+    } else if (fotosTomadas >= LIMITE) {
+      irAPantalla('pantallaGuardar');
+    } else if (fotosTomadas > 0) {
+      estado.textContent = `Llevás ${fotosTomadas} de ${LIMITE} fotos`;
+      irAPantalla('pantallaCamara');
+    } else {
+      irAPantalla('pantallaHome');
+    }
+  </script>
+</body>
+</html>
